@@ -39,7 +39,7 @@ public class JanelaPrincipal {
     JTable jt;
     JPanel pPainelDeInsecaoDeDados;
     JButton insertButton;
-    DBFuncionalidades bd;
+    Neo4jFunctionality bd;
     JButton deleteButton;
     JButton ddlButton;
     JPanel findPanel;
@@ -47,7 +47,7 @@ public class JanelaPrincipal {
 
     public void ExibeJanelaPrincipal() {
         /*Janela*/
-        j = new JFrame("ICMC-USP - SCC0241 - Pratica 5");
+        j = new JFrame("ICMC-USP - SCC0241 - Trabalho Final");
         j.setSize(700, 500);
         j.setLayout(new BorderLayout());
         j.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -145,7 +145,7 @@ public class JanelaPrincipal {
                 jtAreaDeStatus.validate();
                 pPainelDeBaixo.validate();
                 j.validate();
-                bd.getDDLFromTable();
+                //bd.getDDLFromTable();
             }
 
             @Override
@@ -169,16 +169,13 @@ public class JanelaPrincipal {
         
         tabbedPane.add(schemaPanel, "Gerar DDL");
         
-        
-        
         j.setVisible(true);
 
-        bd = new DBFuncionalidades(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc, pPainelDeExibicaoDeDados, findPanel, schemaPanel);
-        if (bd.conectar()) {
-            bd.pegarNomesDeTabelas(jc);
-            updateDisplay();
-        }
-        
+        bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc, pPainelDeExibicaoDeDados, findPanel, schemaPanel);
+        bd.connect("bolt://localhost:11001", "neo4j", "1234");
+        bd.setLabels(jc);
+        updateDisplay();
+      
         
         this.DefineEventos();
     }
@@ -189,7 +186,7 @@ public class JanelaPrincipal {
                 new java.awt.event.MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(bd.deleteSelectedRow())
+                //if(bd.deleteSelectedRow())
                     updateDisplay();
             }
 
@@ -211,15 +208,14 @@ public class JanelaPrincipal {
         }
         );
         
-        
-        
+
         jc.addItemListener(
                 new java.awt.event.ItemListener() {
             @Override
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 JComboBox jcTemp = (JComboBox) e.getSource();
                 updateDisplay();
-                bd.checkForeignKey("insert");
+               // bd.checkForeignKey("insert");
             }
         });
         
@@ -228,8 +224,8 @@ public class JanelaPrincipal {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                bd.insertDataFromTable(pPainelDeInsecaoDeDados, (String)jc.getSelectedItem());
-                bd.displayData(pPainelDeExibicaoDeDados);
+                //bd.insertDataFromTable(pPainelDeInsecaoDeDados, (String)jc.getSelectedItem());
+                //bd.displayData(pPainelDeExibicaoDeDados);
                 
             }
 
@@ -237,9 +233,9 @@ public class JanelaPrincipal {
     }
     
     void updateDisplay(){
-        jtAreaDeStatus.setText((String) jc.getSelectedItem()+bd.pegarMetaDados((String) jc.getSelectedItem()));     
-        bd.displayData(pPainelDeExibicaoDeDados);
-        bd.updateInsertTable((String)jc.getSelectedItem(), pPainelDeInsecaoDeDados, insertButton);
-        bd.updateFindPanel((String)jc.getSelectedItem());
+        //jtAreaDeStatus.setText((String) jc.getSelectedItem()+bd.pegarMetaDados((String) jc.getSelectedItem()));     
+        bd.getAllNodesAndDisplay(pPainelDeExibicaoDeDados);
+        //bd.updateInsertTable((String)jc.getSelectedItem(), pPainelDeInsecaoDeDados, insertButton);
+       //bd.updateFindPanel((String)jc.getSelectedItem());
     }
 }
