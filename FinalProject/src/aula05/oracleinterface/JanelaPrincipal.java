@@ -186,7 +186,7 @@ public class JanelaPrincipal {
                 new java.awt.event.MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //if(bd.deleteSelectedRow())
+                if(bd.deleteSelectedNode())
                     updateDisplay();
             }
 

@@ -95,6 +95,7 @@ public class Neo4jFunctionality{
             // Each Cypher execution returns a stream of records.
             Record record = null;
             Iterable<String> it = null;
+            
             if(result.hasNext()){
                 record = result.next();
                 it = record.get(0).keys();
@@ -124,7 +125,7 @@ public class Neo4jFunctionality{
                     int i = 0;
                     for(String str : it){
                         data[i] = record.get(0).get(str).toString();
-                        data[i] = data[i].replace('"', ' ');
+                        data[i] = data[i].replace("\"", "");
                         i++;
                     }
                     
@@ -149,6 +150,64 @@ public class Neo4jFunctionality{
     public void close(){
         // Closing a driver immediately shuts down all open connections.
         driver.close();
+    }
+    
+    /**
+     * Delete selected node of displaytable
+     * @return true if node was delete successfully
+     */
+    public Boolean deleteSelectedNode(){
+        
+        //MATCH (n { name: 'Andy' }) DETACH DELETE n
+        int selectedIndex = displayTable.getSelectedRow();
+        if(selectedIndex == -1){
+            jtAreaDeStatus.setText("Erro ao excluir: nenhum registro selecionado.");
+            return false;
+            
+        }
+        
+        //get column names and values from table        
+        int nCols = displayTable.getColumnCount();
+        String[] data = new String[nCols];
+        String[] columnNames = new String[nCols];
+        
+        //go through the selectedRow to get values of primary keys
+        for(int i=0; i<nCols; i++){
+            //get data from cell
+            columnNames[i] = displayTable.getColumnName(i);
+            data[i] = (String)displayTable.getModel().getValueAt(selectedIndex, i);      
+            System.out.println(columnNames[i]+" - "+data[i]);
+        }
+        deleteNode(columnNames, data);
+        return true;
+    }
+    
+    /**
+     * Delete a Node with DETACH DELETE (deletes related relationships)
+     * @param columnNames name of properties used in matching
+     * @param data data of properties used in matching
+     */
+    private void deleteNode(String[] columnNames, String[] data){
+        
+        //Query Example
+        //MATCH (n { name: 'Andy' }) DETACH DELETE n
+        String query = "MATCH (n {";
+        
+        //all properties are used in search
+        for(int i=0; i< columnNames.length-1; i++){
+            query+= " "+columnNames[i]+": '"+data[i]+"',";
+        }
+        
+        query+= " "+columnNames[columnNames.length-1]+": '"+data[columnNames.length-1]+"'";
+        query+= "}) DETACH DELETE n";
+        
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
 }
