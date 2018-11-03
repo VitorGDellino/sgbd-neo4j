@@ -37,6 +37,7 @@ public class JanelaPrincipal {
     JTextArea jtAreaDeStatus;
     JTabbedPane tabbedPane;
     JPanel pPainelDeExibicaoDeDados;
+    JPanel pPainelDeExibicaoDeRel;
     JTable jt;
     JTable jtRel;
     JPanel pPainelDeInsecaoDeDados;
@@ -116,7 +117,7 @@ public class JanelaPrincipal {
        
         
         /*Tab de exibicao de relacionamentos*/
-        JPanel pPainelDeExibicaoDeRel = new JPanel();
+        pPainelDeExibicaoDeRel = new JPanel();
         JPanel displayPanelRel = new JPanel();
         displayPanelRel.setLayout(new BoxLayout(displayPanelRel, BoxLayout.PAGE_AXIS));
         pPainelDeExibicaoDeRel.setLayout(new GridLayout(1, 1));
@@ -155,52 +156,11 @@ public class JanelaPrincipal {
         
         tabbedPane.add(findPanel, "Busca");
         
-        schemaPanel = new JPanel();
-        schemaPanel.setLayout(new GridLayout(3,2));
-        schemaPanel.add(new JLabel("Usuário:"));
-        schemaPanel.add(new JTextField(""));
-        schemaPanel.add(new JLabel("Senha"));
-        schemaPanel.add(new JPasswordField());
-        schemaPanel.add(new JLabel(""));
-        
-        ddlButton = new JButton("Gerar DDL");
-        schemaPanel.add(ddlButton);
-        
-        ddlButton.addMouseListener(
-                new java.awt.event.MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                jtAreaDeStatus.setText("Gerando DDL...");
-                jtAreaDeStatus.validate();
-                pPainelDeBaixo.validate();
-                j.validate();
-                //bd.getDDLFromTable();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-        }
-        );
-        
-        
-        tabbedPane.add(schemaPanel, "Gerar DDL");
+       
         
         j.setVisible(true);
 
-        bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc, pPainelDeExibicaoDeDados, findPanel, schemaPanel);
+        bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc,jcRel, pPainelDeExibicaoDeDados, findPanel);
         bd.connect("bolt://localhost:11001", "neo4j", "1234");
         bd.setLabels(jc);
         bd.setRelationshipTypes(jcRel);
@@ -254,7 +214,7 @@ public class JanelaPrincipal {
             @Override
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 JComboBox jcTemp = (JComboBox) e.getSource();
-                updateDisplay();
+                bd.getAllRelationshipsAndDisplay(pPainelDeExibicaoDeRel);
                // bd.checkForeignKey("insert");
             }
         });
@@ -276,6 +236,7 @@ public class JanelaPrincipal {
     void updateDisplay(){
         //jtAreaDeStatus.setText((String) jc.getSelectedItem()+bd.pegarMetaDados((String) jc.getSelectedItem()));     
         bd.getAllNodesAndDisplay(pPainelDeExibicaoDeDados);
+        bd.getAllRelationshipsAndDisplay(pPainelDeExibicaoDeRel);
         //bd.updateInsertTable((String)jc.getSelectedItem(), pPainelDeInsecaoDeDados, insertButton);
        //bd.updateFindPanel((String)jc.getSelectedItem());
     }

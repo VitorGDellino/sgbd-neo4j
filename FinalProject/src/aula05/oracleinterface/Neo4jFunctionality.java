@@ -33,16 +33,16 @@ public class Neo4jFunctionality{
     JPanel displaySearchPanel;
     String primaryKeyValues[];
     ArrayList<String> primaryKeyNames;
-    JPanel schemaPanel;
+    JComboBox relationshipNameBox;
 
-    public Neo4jFunctionality(JTextArea jtaTextArea, JPanel insertPanel, JComboBox comboBox, JPanel displayPanel, JPanel findPanel, JPanel schemaPanel){
+    public Neo4jFunctionality(JTextArea jtaTextArea, JPanel insertPanel, JComboBox comboBox, JComboBox relationshipNameBox, JPanel displayPanel, JPanel findPanel){
         
         jtAreaDeStatus = jtaTextArea;
         insertPanelLocal = insertPanel;
         tableNameBox = comboBox;
+        this.relationshipNameBox = relationshipNameBox;
         this.displayPanel = displayPanel;
         this.findPanel = findPanel;
-        this.schemaPanel = schemaPanel;
     }
     
     public void connect(String uri, String user, String password){
@@ -123,9 +123,9 @@ public class Neo4jFunctionality{
             Iterable<String> it = null;
             
             if(result.hasNext()){
+                
                 record = result.next();
                 it = record.get(0).keys();
-                
                 for(String str : it){
                     columnsName.add(str);
                 }
@@ -177,6 +177,79 @@ public class Neo4jFunctionality{
         // Closing a driver immediately shuts down all open connections.
         driver.close();
     }
+    
+    /**
+     * Get all the relationships and display them on the table
+     * @param displayPanel 
+     */
+    public void getAllRelationshipsAndDisplay(JPanel displayPanel){
+        ArrayList<String> columnsName = new ArrayList<String>();
+        String[] data = null;
+        DefaultTableModel model = null;
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            //MATCH (n)-[r:RELATIONSHIP_TYPE]->(m) return n,m
+            StatementResult result = session.run("MATCH (n)-[r:"+(String)this.relationshipNameBox.getSelectedItem() + "]->(m) RETURN n, m");
+            // Each Cypher execution returns a stream of records.
+            Record record = null;
+            Iterable<String> it0 = null;
+            Iterable<String> it1 = null;
+            
+            if(result.hasNext()){
+                
+                /*for(String str : it){
+                    columnsName.add(str);
+                }
+                //data = new String[columnsName.size()];
+                //data =  columnsName.toArray(data);
+                */
+                data = new String[2];
+                data[0] = "Nó 1";
+                data[1] = "Nó 2";
+                displayTable = new JTable(new DefaultTableModel(data,0)){
+                    private static final long serialVersionUID = 1L;                  
+
+                };
+            
+                model = (DefaultTableModel) displayTable.getModel();
+            }
+
+            while (result.hasNext()){
+                record = result.next();
+                
+                it0 = record.get(0).keys();
+                it1 = record.get(1).keys();
+                
+                if(it0 != null){
+                   
+                    data[0] = "";
+                    data[1] = "";
+                    for(String str : it0){
+                        data[0] += str+": "+record.get(0).get(str).toString()+", ";
+                   
+                    }
+                    
+                    for(String str : it1){
+                        data[1] += str+": "+record.get(1).get(str).toString()+", ";
+                    }
+                    
+                    model.addRow(data);
+                }
+                                
+            }
+           
+            model.fireTableDataChanged();
+            
+            //adds table to containing panel
+            JScrollPane jsp = new JScrollPane(displayTable);
+            displayPanel.removeAll();
+            displayPanel.add(jsp);
+            displayPanel.validate();
+            displayPanel.repaint();
+        
+        }
+    }
+
     
     /**
      * Delete selected node of displaytable
