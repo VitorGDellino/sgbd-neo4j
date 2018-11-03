@@ -70,7 +70,7 @@ public class Neo4jFunctionality{
 
             while(result.hasNext()){
                 Record record = result.next();
-                labels.add(record.get(0).get(0).toString().substring(1, record.get(0).get(0).toString().length() - 1));
+                labels.add(record.get(0).get(0).toString().replace("\"",""));
             }
         }
         
@@ -83,6 +83,32 @@ public class Neo4jFunctionality{
             jc.addItem(label);
         }
     }
+    
+    /**
+     * Query for all the relationshipTypes in database
+     * @return 
+     */
+    private ArrayList<String> getAllRelationshipTypes(){
+        ArrayList<String> labels = new ArrayList<String>();
+        try(Session session = driver.session()){
+            StatementResult result = session.run("MATCH (n)-[r]-(m) RETURN DISTINCT type(r)");
+
+            while(result.hasNext()){
+                Record record = result.next();
+                labels.add(record.get(0).toString().replace("\"",""));
+            }
+        }
+        
+        return labels;
+    }
+    
+    public void setRelationshipTypes(JComboBox jc){
+        ArrayList<String> labels = getAllRelationshipTypes();
+        for(String label : labels){
+            jc.addItem(label);
+        }
+    }
+    
     
     
     public void getAllNodesAndDisplay(JPanel displayPanel){

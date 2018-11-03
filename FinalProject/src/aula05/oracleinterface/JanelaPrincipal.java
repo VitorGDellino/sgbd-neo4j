@@ -33,14 +33,17 @@ public class JanelaPrincipal {
     JPanel pPainelDeCima;
     JPanel pPainelDeBaixo;
     JComboBox jc;
+    JComboBox jcRel;
     JTextArea jtAreaDeStatus;
     JTabbedPane tabbedPane;
     JPanel pPainelDeExibicaoDeDados;
     JTable jt;
+    JTable jtRel;
     JPanel pPainelDeInsecaoDeDados;
     JButton insertButton;
     Neo4jFunctionality bd;
     JButton deleteButton;
+    JButton deleteButtonRel;
     JButton ddlButton;
     JPanel findPanel;
     JPanel schemaPanel;
@@ -56,7 +59,11 @@ public class JanelaPrincipal {
         pPainelDeCima = new JPanel();
         j.add(pPainelDeCima, BorderLayout.NORTH);
         jc = new JComboBox();
+        pPainelDeCima.add(new JLabel("Nós:"));
         pPainelDeCima.add(jc);
+        pPainelDeCima.add(new JLabel("Rel.:"));
+        jcRel = new JComboBox();
+        pPainelDeCima.add(jcRel);
 
         /*Painel da parte inferior (south) - com área de status*/
         pPainelDeBaixo = new JPanel();
@@ -80,7 +87,7 @@ public class JanelaPrincipal {
         deleteButton = new JButton("Excluir registro");
         displayPanel.add(deleteButton);
         //tabbedPane.add(pPainelDeExibicaoDeDados, "Exibição");
-        tabbedPane.add(displayPanel, "Exibição");
+        tabbedPane.add(displayPanel, "Exibição - Nós");
         
         /*Table de exibição*/
         int nColunas = 3;
@@ -105,6 +112,28 @@ public class JanelaPrincipal {
         jt = new JTable(dados, colunas);
         JScrollPane jsp = new JScrollPane(jt);
         pPainelDeExibicaoDeDados.add(jsp);
+        
+       
+        
+        /*Tab de exibicao de relacionamentos*/
+        JPanel pPainelDeExibicaoDeRel = new JPanel();
+        JPanel displayPanelRel = new JPanel();
+        displayPanelRel.setLayout(new BoxLayout(displayPanelRel, BoxLayout.PAGE_AXIS));
+        pPainelDeExibicaoDeRel.setLayout(new GridLayout(1, 1));
+        displayPanelRel.add(pPainelDeExibicaoDeRel);
+        
+        jtRel = new JTable(dados, colunas);
+        JScrollPane jspRel = new JScrollPane(jtRel);
+        pPainelDeExibicaoDeRel.add(jspRel);
+        
+        deleteButtonRel = new JButton("Excluir registro");
+        displayPanelRel.add(deleteButtonRel);
+        
+        tabbedPane.add(displayPanelRel, "Exibição - Rel.");
+        
+        
+        
+        
 
         /*Tab de inserção*/
         pPainelDeInsecaoDeDados = new JPanel();
@@ -174,6 +203,7 @@ public class JanelaPrincipal {
         bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc, pPainelDeExibicaoDeDados, findPanel, schemaPanel);
         bd.connect("bolt://localhost:11001", "neo4j", "1234");
         bd.setLabels(jc);
+        bd.setRelationshipTypes(jcRel);
         updateDisplay();
       
         
@@ -218,6 +248,17 @@ public class JanelaPrincipal {
                // bd.checkForeignKey("insert");
             }
         });
+        
+        jcRel.addItemListener(
+                new java.awt.event.ItemListener() {
+            @Override
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                JComboBox jcTemp = (JComboBox) e.getSource();
+                updateDisplay();
+               // bd.checkForeignKey("insert");
+            }
+        });
+        
         
         insertButton.addActionListener(new ActionListener()
         {
