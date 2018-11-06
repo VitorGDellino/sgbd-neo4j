@@ -127,7 +127,7 @@ public class JanelaPrincipal {
         JScrollPane jspRel = new JScrollPane(jtRel);
         pPainelDeExibicaoDeRel.add(jspRel);
         
-        deleteButtonRel = new JButton("Excluir registro");
+        deleteButtonRel = new JButton("Excluir relacionamento");
         displayPanelRel.add(deleteButtonRel);
         
         tabbedPane.add(displayPanelRel, "Exibição - Rel.");
@@ -177,6 +177,32 @@ public class JanelaPrincipal {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(bd.deleteSelectedNode())
+                    updateDisplay();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        }
+        );
+        
+        deleteButtonRel.addMouseListener(
+                new java.awt.event.MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(bd.deleteSelectedRelationship())
                     updateDisplay();
             }
 
