@@ -626,5 +626,46 @@ public class Neo4jFunctionality{
         }
     }
     
+    /**
+     * Get data from table and update it in database.
+     * Called by update button.
+     */
+    public void updateDataFromTable(){
+        
+        JPanel insertTable = this.displaySearchPanel;
+        
+     
+        //removing label and button from count
+        int nColumns = (insertTable.getComponentCount()-2)/2;
+        
+        
+        String data[] = new String[nColumns];
+        String columns[] = new String[nColumns];
+        
 
+        JTextField temp;
+        JLabel tempLabel;
+        JComboBox tempBox;
+        
+        for(int i=0; i< nColumns*2; i++){
+            if(i%2==0){
+                tempLabel = (JLabel) insertTable.getComponent(i);
+                columns[i/2]= tempLabel.getText();
+            }else{
+                if(insertTable.getComponent(i) instanceof JTextField){
+                    temp = (JTextField)insertTable.getComponent(i);
+                    data[(i-1)/2] = temp.getText();
+                }else{
+                    tempBox = (JComboBox) insertTable.getComponent(i);
+                    data[(i-1)/2] = (String)tempBox.getSelectedItem();
+                }
+            }
+            
+            
+        }
+        
+        //updateDataColumns((String)this.tableNameBox.getSelectedItem(),columns, data);
+      
+    }
+    
 }
