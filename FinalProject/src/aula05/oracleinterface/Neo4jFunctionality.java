@@ -396,7 +396,7 @@ public class Neo4jFunctionality{
         searchButton.addMouseListener(new java.awt.event.MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //loadSearchData();
+                loadSearchData();
             }
 
             @Override
@@ -473,6 +473,158 @@ public class Neo4jFunctionality{
             System.out.println("getNameOfPrimaryKeys"+ex.getMessage());
         } 
         return null;
+    }
+    
+     /**
+     * Get data with the primary keys specified in the find panel
+     */
+    void loadSearchData(){
+        
+        //first get data from panel to use on search
+        
+        //number of primary keys
+        int nColumns = (primaryKeysPanel.getComponentCount())/2;
+        
+        //column names and data
+        ArrayList<String> columnNames = new ArrayList<String>();
+        String data[] = new String[nColumns];
+        
+        //get data from the table by iterating through the components
+        JTextField temp;
+        JLabel tempLabel;
+        JComboBox tempBox;
+        for(int i=0; i< nColumns*2; i++){
+            if(i%2==0){
+                tempLabel = (JLabel)primaryKeysPanel.getComponent(i);
+                columnNames.add(tempLabel.getText());
+            }else{
+                temp = (JTextField)primaryKeysPanel.getComponent(i);
+                data[(i-1)/2] = temp.getText();
+            }
+        }
+        
+        //saving primary keys and values for posterior use
+        this.primaryKeyNames = columnNames;
+        this.primaryKeyValues = data;
+        
+        //build query
+        //example query: MATCH (n:Aluno {NROUSP: "1"}) return n
+        String query = "MATCH (n:"+ (String)this.tableNameBox.getSelectedItem()+" {";
+        
+        //for each column in the search
+        for(int i=0; i< columnNames.size()-1; i++){
+            query += columnNames.get(i) +": \""+data[i]+"\", "; 
+        }
+        query += columnNames.get(columnNames.size()-1) +": \""+data[data.length-1]+"\"}) RETURN n"; 
+        
+        System.out.println(query);
+        /*
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+            
+            if (result.hasNext()){
+                Record record = result.next();
+                String[] dataColumnNames = new String[nDataColumns];
+                String[] retrievedData = new String[nDataColumns];
+                
+                for(int i=0; i<nDataColumns; i++){
+                    dataColumnNames[i] = rsmd.getColumnName(i+1);
+                    retrievedData[i] = rs.getString(dataColumnNames[i]);
+                }
+                BorderLayout layout = (BorderLayout) findPanel.getLayout();
+                findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                
+                this.displaySearchPanel = new JPanel();
+                
+               
+                displaySearchedData(displaySearchPanel, dataColumnNames, retrievedData);
+                
+                findPanel.add(displaySearchPanel, BorderLayout.CENTER);
+                findPanel.validate();
+                 
+            }else{
+                BorderLayout layout = (BorderLayout) findPanel.getLayout();
+                findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                findPanel.add(new JLabel("Registro não encontado. Tente novamente.", SwingConstants.CENTER), BorderLayout.CENTER);
+                findPanel.validate();
+            }
+            
+            
+        } catch (Exception ex) {
+            
+            System.out.println("loadSearchData: "+ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao deletar registro: "+ ex.getMessage());
+           
+        } */ 
+        
+    }
+    
+    /**
+     * Display data selected by given columns and values
+     * @param insertPanel the panel where the data should be displayed
+     * @param columnNames the name of the columns used in the WHERE select statemente
+     * @param data value of the columns indicated by columnNames
+     */
+    void displaySearchedData(JPanel insertPanel, String[] columnNames, String[] data){
+          //empty panel
+        /*insertPanel.removeAll();
+        try{
+            //Column names
+           String tableName = (String) this.tableNameBox.getSelectedItem();
+           
+
+           //get MetaData
+           String[] checkConstraints = getTableConstraintsString(tableName, "C");
+           
+           String dataType;
+           String label;
+
+           insertPanel.setLayout(new GridLayout(columnNames.length+1, 2));
+           for(int i=0; i<columnNames.length; i++){
+
+               label = columnNames[i];
+              
+               //name of column
+               insertPanel.add(new JLabel(label));
+               //data of the column
+               insertField(tableName, columnNames[i], insertPanel, checkConstraints, data[i]);
+               
+            }
+           
+            insertPanel.add(new JLabel("Clique para alterar dados:"));
+            JButton searchButton = new JButton("Salvar");
+            insertPanel.add(searchButton);
+            searchButton.addMouseListener(new java.awt.event.MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                   updateDataFromTable();
+                   displayData(displayPanel);
+                   
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+            });
+           
+        
+        }catch(Exception e){
+            jtAreaDeStatus.setText("DisplaySearchedData:"+e.getMessage());
+            System.out.println(e.getMessage());
+        }*/
     }
 
 }
