@@ -668,4 +668,25 @@ public class Neo4jFunctionality{
       
     }
     
+    public boolean insertNode(String tableName, ArrayList<String> columnsNames, ArrayList<JTextField> inputs){
+        try(Session session = driver.session()){
+            String query = "CREATE( a:" + tableName + "{";
+            for(int i = 0; i < columnsNames.size(); i++){
+                query += " " + columnsNames.get(i) + " : ";
+                query += "'"+ inputs.get(i).getText().toString() + "',";
+            }
+            
+            query = query.substring(0, query.length()-1);
+            
+            query += "});";
+            
+            System.out.println(query);
+            //StatementResult result = session.run(query);
+            
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+    
 }
