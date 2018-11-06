@@ -517,32 +517,34 @@ public class Neo4jFunctionality{
         }
         query += columnNames.get(columnNames.size()-1) +": \""+data[data.length-1]+"\"}) RETURN n"; 
         
-        System.out.println(query);
-        /*
+  
         try (Session session = driver.session()){
             // Auto-commit transactions are a quick and easy way to wrap a read.
             StatementResult result = session.run(query);
             
             if (result.hasNext()){
                 Record record = result.next();
-                String[] dataColumnNames = new String[nDataColumns];
-                String[] retrievedData = new String[nDataColumns];
+                ArrayList<String> dataColumnNames = new ArrayList<>();
+                ArrayList<String> retrievedData = new ArrayList<>();
                 
-                for(int i=0; i<nDataColumns; i++){
-                    dataColumnNames[i] = rsmd.getColumnName(i+1);
-                    retrievedData[i] = rs.getString(dataColumnNames[i]);
+                //get column names plus data
+                Iterable<String> it = record.get(0).keys();
+                for(String str : it){
+                    dataColumnNames.add(str);
+                    retrievedData.add(record.get(0).get(str).toString());
                 }
+                
                 BorderLayout layout = (BorderLayout) findPanel.getLayout();
                 findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
                 
                 this.displaySearchPanel = new JPanel();
                 
                
-                displaySearchedData(displaySearchPanel, dataColumnNames, retrievedData);
+                displaySearchedData(displaySearchPanel, dataColumnNames.toArray(new String[0]), retrievedData.toArray(new String[0]));
                 
                 findPanel.add(displaySearchPanel, BorderLayout.CENTER);
                 findPanel.validate();
-                 
+                
             }else{
                 BorderLayout layout = (BorderLayout) findPanel.getLayout();
                 findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
@@ -556,7 +558,7 @@ public class Neo4jFunctionality{
             System.out.println("loadSearchData: "+ex.getMessage());
             jtAreaDeStatus.setText("Erro ao deletar registro: "+ ex.getMessage());
            
-        } */ 
+        }  
         
     }
     
@@ -567,15 +569,12 @@ public class Neo4jFunctionality{
      * @param data value of the columns indicated by columnNames
      */
     void displaySearchedData(JPanel insertPanel, String[] columnNames, String[] data){
-          //empty panel
-        /*insertPanel.removeAll();
+        
+         //empty panel
+        insertPanel.removeAll();
         try{
             //Column names
            String tableName = (String) this.tableNameBox.getSelectedItem();
-           
-
-           //get MetaData
-           String[] checkConstraints = getTableConstraintsString(tableName, "C");
            
            String dataType;
            String label;
@@ -588,7 +587,7 @@ public class Neo4jFunctionality{
                //name of column
                insertPanel.add(new JLabel(label));
                //data of the column
-               insertField(tableName, columnNames[i], insertPanel, checkConstraints, data[i]);
+               insertPanel.add(new JTextField(data[i].replace("\"","")));
                
             }
            
@@ -598,8 +597,8 @@ public class Neo4jFunctionality{
             searchButton.addMouseListener(new java.awt.event.MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                   updateDataFromTable();
-                   displayData(displayPanel);
+                   //updateDataFromTable();
+                   //displayData(displayPanel);
                    
                 }
 
@@ -624,7 +623,8 @@ public class Neo4jFunctionality{
         }catch(Exception e){
             jtAreaDeStatus.setText("DisplaySearchedData:"+e.getMessage());
             System.out.println(e.getMessage());
-        }*/
+        }
     }
+    
 
 }
