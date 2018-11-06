@@ -9,14 +9,24 @@ package aula05.oracleinterface;
  *
  * @author Vitor Giovani
  */
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
 import java.util.*;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import org.neo4j.driver.v1.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -359,6 +369,110 @@ public class Neo4jFunctionality{
         deleteRelationship(node1, node2, relationshipType);
         
         return true;
+    }
+    
+    /**
+     * Update find panel to match current table
+     * @param tableName name of selected table
+     */
+    public void updateFindPanel(String tableName){
+        
+        //get name of primary key columns
+        ArrayList<String> primaryKeyColumns = this.getNameOfPrimaryKeys((String)this.tableNameBox.getSelectedItem());
+        
+        findPanel.removeAll();
+        
+        //primary key attributes on the top
+        primaryKeysPanel = new JPanel(new GridLayout(1,primaryKeyColumns.size()*2+1));
+        //add all attributes with fields
+        for(int i=0; i< primaryKeyColumns.size(); i++){
+            primaryKeysPanel.add(new JLabel(primaryKeyColumns.get(i), SwingConstants.CENTER));
+            primaryKeysPanel.add(new JTextField());
+        }
+        
+        //button for searching data
+        JButton searchButton = new JButton("Buscar");
+        primaryKeysPanel.add(searchButton);
+        searchButton.addMouseListener(new java.awt.event.MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //loadSearchData();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+        
+        findPanel.add(primaryKeysPanel, BorderLayout.NORTH);
+        
+        findPanel.add(new JLabel("Resultados da busca serão mostrados aqui", SwingConstants.CENTER), BorderLayout.CENTER);
+        findPanel.validate();
+        
+    }
+    
+       /**
+     * Get string with name of the primary keys of a table
+     * @param tableName name of the table
+     * @return name of the columns which are primary keys
+     */
+    ArrayList<String> getNameOfPrimaryKeys(String tableName){
+        
+        ArrayList<String> primaryKeys = new ArrayList();
+        String query = "CALL db.constraints";
+        Record record = null;
+        Iterable<String> it = null;
+        String name;
+        
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+            
+            while (result.hasNext()){
+                record = result.next();
+                
+                //get name of label to which constraint is applied
+                Pattern pattern = Pattern.compile(":([A-Z])\\w+");
+                Matcher matcher = pattern.matcher(record.get(0).toString());
+              
+                if(matcher.find()){
+                    name = matcher.group();
+                    name = name.substring(1);
+                    
+                    //is it from the table we're looking for?
+                    //if not, moves on to next result
+                    if(!name.equals(tableName))
+                        continue;
+                    
+                    pattern = Pattern.compile("\\.([A-Z])\\w+");
+                    matcher = pattern.matcher(record.get(0).toString());
+                    
+                    while(matcher.find()){
+                        primaryKeys.add(matcher.group().substring(1));
+                    }
+                }
+                
+            }
+            
+            return primaryKeys;
+
+        }catch (Exception ex) {
+            jtAreaDeStatus.setText("getNameOfPrimaryKeys"+ex.getMessage());
+            System.out.println("getNameOfPrimaryKeys"+ex.getMessage());
+        } 
+        return null;
     }
 
 }
