@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -41,13 +42,19 @@ public class JanelaPrincipal {
     JTable jt;
     JTable jtRel;
     JPanel pPainelDeInsecaoDeDados;
+    JPanel boxDeInsercaoDeDados;
     JButton insertButton;
+    JButton insertFieldButton;
+    JTextField columnName;
     Neo4jFunctionality bd;
     JButton deleteButton;
     JButton deleteButtonRel;
     JButton ddlButton;
     JPanel findPanel;
     JPanel schemaPanel;
+    
+    ArrayList<JLabel> inputLabels;
+    ArrayList<JTextField> inputFields;
 
     public void ExibeJanelaPrincipal() {
         /*Janela*/
@@ -138,18 +145,25 @@ public class JanelaPrincipal {
 
         /*Tab de inserção*/
         pPainelDeInsecaoDeDados = new JPanel();
-        pPainelDeInsecaoDeDados.setLayout(new GridLayout(nColunas+1, 2));
-        pPainelDeInsecaoDeDados.add(new JLabel("Coluna1"));
-        pPainelDeInsecaoDeDados.add(new JTextField("Digite aqui"));
-        pPainelDeInsecaoDeDados.add(new JLabel("Coluna2"));
-        pPainelDeInsecaoDeDados.add(new JTextField("Digite aqui"));
-        pPainelDeInsecaoDeDados.add(new JLabel("Coluna3"));
-        pPainelDeInsecaoDeDados.add(new JTextField("Digite aqui"));
-        pPainelDeInsecaoDeDados.add(new JLabel("Clique para inserir:"));
+        
+        pPainelDeInsecaoDeDados.setLayout(new BoxLayout(pPainelDeInsecaoDeDados, BoxLayout.PAGE_AXIS));
+        boxDeInsercaoDeDados = new JPanel();
+        boxDeInsercaoDeDados.setLayout(new BoxLayout(boxDeInsercaoDeDados, BoxLayout.PAGE_AXIS));
+        pPainelDeInsecaoDeDados.add(boxDeInsercaoDeDados);    
+        
+        JPanel boxDeBotoes = new JPanel();
+        boxDeBotoes.setLayout(new BoxLayout(boxDeBotoes, BoxLayout.LINE_AXIS));
+        
         insertButton = new JButton("Confirmar");
-        pPainelDeInsecaoDeDados.add(insertButton);
+        insertFieldButton = new JButton("Inserir Novo Campo");
+        columnName = new JTextField("Nome do Campo");
+        
+        boxDeBotoes.add(insertButton);
+        boxDeBotoes.add(insertFieldButton);
+        boxDeBotoes.add(columnName);        
+        pPainelDeInsecaoDeDados.add(boxDeBotoes);
+        
         tabbedPane.add(pPainelDeInsecaoDeDados, "Inserção");
-
       
         findPanel = new JPanel();
         findPanel.setLayout(new BorderLayout());
@@ -256,6 +270,17 @@ public class JanelaPrincipal {
                 
             }
 
+        });
+        
+        insertFieldButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+                panel.add(new JLabel(columnName.getText().toString()));
+                panel.add(new JTextField(20));
+                boxDeInsercaoDeDados.add(panel); //To change body of generated methods, choose Tools | Templates.
+            }
         });
     }
     

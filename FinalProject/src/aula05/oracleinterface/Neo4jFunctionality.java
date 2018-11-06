@@ -360,5 +360,14 @@ public class Neo4jFunctionality{
         
         return true;
     }
+    
+    /* ----------Inserting---------- */
+    
+    
+    public boolean insertNode(){
+        
+        
+        return true;
+    }
 
 }
