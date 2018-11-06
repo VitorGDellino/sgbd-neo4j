@@ -157,7 +157,7 @@ public class Neo4jFunctionality{
                     }
                     
                     model.addRow(data);
-                    System.out.println();
+                    
                 }
                 record = result.next();                  
             }
@@ -276,7 +276,7 @@ public class Neo4jFunctionality{
             //get data from cell
             columnNames[i] = displayTable.getColumnName(i);
             data[i] = (String)displayTable.getModel().getValueAt(selectedIndex, i);      
-            System.out.println(columnNames[i]+" - "+data[i]);
+            
         }
         deleteNode(columnNames, data);
         return true;
@@ -308,6 +308,57 @@ public class Neo4jFunctionality{
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+    }
+    
+    /**
+     * Run query to delete relationship of given type between two nodes
+     * @param node1 parameters + data text of node1
+     * @param node2 parameters + data text of node2
+     * @param relationshipType name of relationship
+     */
+    private void deleteRelationship(String node1, String node2, String relationshipType){
+        
+        //Query Example
+        //MATCH ({name: 'Andy'})-[r:RELEASED]-({name:'Elisa'}) DELETE r
+        String query = "MATCH ({";
+        query += node1.substring(0,node1.length()-2);
+        query += "})-[r:";
+        query += relationshipType;
+        query += "]-({";
+        query += node2.substring(0,node2.length()-2);
+        query +="}) DELETE r";
+        
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    /**
+     * Get data from table and delete the selected relationship
+     * @return true if the relationship was successfully deleted
+     */
+    public Boolean deleteSelectedRelationship(){
+        
+        //MATCH (n { name: 'Andy' }) DETACH DELETE n
+        int selectedIndex = displayTableRel.getSelectedRow();
+        if(selectedIndex == -1){
+            jtAreaDeStatus.setText("Erro ao excluir: nenhum relacionamento selecionado.");
+            return false;
+            
+        }
+        
+        //get column names and values from table        
+        String node1 = (String)displayTableRel.getModel().getValueAt(selectedIndex, 0);   
+        String node2 = (String)displayTableRel.getModel().getValueAt(selectedIndex, 1);  
+        String relationshipType = (String)this.relationshipNameBox.getSelectedItem();
+        
+        deleteRelationship(node1, node2, relationshipType);
+        
+        return true;
     }
 
 }
