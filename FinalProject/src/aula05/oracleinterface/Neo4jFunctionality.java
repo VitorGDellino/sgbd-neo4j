@@ -27,6 +27,7 @@ public class Neo4jFunctionality{
     JPanel insertPanelLocal;
     JPanel displayPanel;
     JTable displayTable;
+    JTable displayTableRel;
     JComboBox tableNameBox;
     JPanel findPanel;
     JPanel primaryKeysPanel;
@@ -206,12 +207,12 @@ public class Neo4jFunctionality{
                 data = new String[2];
                 data[0] = "Nó 1";
                 data[1] = "Nó 2";
-                displayTable = new JTable(new DefaultTableModel(data,0)){
+                displayTableRel = new JTable(new DefaultTableModel(data,0)){
                     private static final long serialVersionUID = 1L;                  
 
                 };
             
-                model = (DefaultTableModel) displayTable.getModel();
+                model = (DefaultTableModel) displayTableRel.getModel();
             }
 
             while (result.hasNext()){
@@ -241,7 +242,7 @@ public class Neo4jFunctionality{
             model.fireTableDataChanged();
             
             //adds table to containing panel
-            JScrollPane jsp = new JScrollPane(displayTable);
+            JScrollPane jsp = new JScrollPane(displayTableRel);
             displayPanel.removeAll();
             displayPanel.add(jsp);
             displayPanel.validate();
