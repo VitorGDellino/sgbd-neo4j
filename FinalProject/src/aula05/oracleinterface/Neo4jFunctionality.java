@@ -9,14 +9,24 @@ package aula05.oracleinterface;
  *
  * @author Vitor Giovani
  */
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
 import java.util.*;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import org.neo4j.driver.v1.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -361,13 +371,301 @@ public class Neo4jFunctionality{
         return true;
     }
     
-    /* ----------Inserting---------- */
-    
-    
-    public boolean insertNode(){
+    /**
+     * Update find panel to match current table
+     * @param tableName name of selected table
+     */
+    public void updateFindPanel(String tableName){
         
+        //get name of primary key columns
+        ArrayList<String> primaryKeyColumns = this.getNameOfPrimaryKeys((String)this.tableNameBox.getSelectedItem());
         
-        return true;
-    }
+        findPanel.removeAll();
+        
+        //primary key attributes on the top
+        primaryKeysPanel = new JPanel(new GridLayout(1,primaryKeyColumns.size()*2+1));
+        //add all attributes with fields
+        for(int i=0; i< primaryKeyColumns.size(); i++){
+            primaryKeysPanel.add(new JLabel(primaryKeyColumns.get(i), SwingConstants.CENTER));
+            primaryKeysPanel.add(new JTextField());
+        }
+        
+        //button for searching data
+        JButton searchButton = new JButton("Buscar");
+        primaryKeysPanel.add(searchButton);
+        searchButton.addMouseListener(new java.awt.event.MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                loadSearchData();
+            }
 
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+        
+        findPanel.add(primaryKeysPanel, BorderLayout.NORTH);
+        
+        findPanel.add(new JLabel("Resultados da busca serão mostrados aqui", SwingConstants.CENTER), BorderLayout.CENTER);
+        findPanel.validate();
+        
+    }
+    
+       /**
+     * Get string with name of the primary keys of a table
+     * @param tableName name of the table
+     * @return name of the columns which are primary keys
+     */
+    ArrayList<String> getNameOfPrimaryKeys(String tableName){
+        
+        ArrayList<String> primaryKeys = new ArrayList();
+        String query = "CALL db.constraints";
+        Record record = null;
+        Iterable<String> it = null;
+        String name;
+        
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+            
+            while (result.hasNext()){
+                record = result.next();
+                
+                //get name of label to which constraint is applied
+                Pattern pattern = Pattern.compile(":([A-Z])\\w+");
+                Matcher matcher = pattern.matcher(record.get(0).toString());
+              
+                if(matcher.find()){
+                    name = matcher.group();
+                    name = name.substring(1);
+                    
+                    //is it from the table we're looking for?
+                    //if not, moves on to next result
+                    if(!name.equals(tableName))
+                        continue;
+                    
+                    pattern = Pattern.compile("\\.([A-Z])\\w+");
+                    matcher = pattern.matcher(record.get(0).toString());
+                    
+                    while(matcher.find()){
+                        primaryKeys.add(matcher.group().substring(1));
+                    }
+                }
+                
+            }
+            
+            return primaryKeys;
+
+        }catch (Exception ex) {
+            jtAreaDeStatus.setText("getNameOfPrimaryKeys"+ex.getMessage());
+            System.out.println("getNameOfPrimaryKeys"+ex.getMessage());
+        } 
+        return null;
+    }
+    
+     /**
+     * Get data with the primary keys specified in the find panel
+     */
+    void loadSearchData(){
+        
+        //first get data from panel to use on search
+        
+        //number of primary keys
+        int nColumns = (primaryKeysPanel.getComponentCount())/2;
+        
+        //column names and data
+        ArrayList<String> columnNames = new ArrayList<String>();
+        String data[] = new String[nColumns];
+        
+        //get data from the table by iterating through the components
+        JTextField temp;
+        JLabel tempLabel;
+        JComboBox tempBox;
+        for(int i=0; i< nColumns*2; i++){
+            if(i%2==0){
+                tempLabel = (JLabel)primaryKeysPanel.getComponent(i);
+                columnNames.add(tempLabel.getText());
+            }else{
+                temp = (JTextField)primaryKeysPanel.getComponent(i);
+                data[(i-1)/2] = temp.getText();
+            }
+        }
+        
+        //saving primary keys and values for posterior use
+        this.primaryKeyNames = columnNames;
+        this.primaryKeyValues = data;
+        
+        //build query
+        //example query: MATCH (n:Aluno {NROUSP: "1"}) return n
+        String query = "MATCH (n:"+ (String)this.tableNameBox.getSelectedItem()+" {";
+        
+        //for each column in the search
+        for(int i=0; i< columnNames.size()-1; i++){
+            query += columnNames.get(i) +": \""+data[i]+"\", "; 
+        }
+        query += columnNames.get(columnNames.size()-1) +": \""+data[data.length-1]+"\"}) RETURN n"; 
+        
+  
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+            
+            if (result.hasNext()){
+                Record record = result.next();
+                ArrayList<String> dataColumnNames = new ArrayList<>();
+                ArrayList<String> retrievedData = new ArrayList<>();
+                
+                //get column names plus data
+                Iterable<String> it = record.get(0).keys();
+                for(String str : it){
+                    dataColumnNames.add(str);
+                    retrievedData.add(record.get(0).get(str).toString());
+                }
+                
+                BorderLayout layout = (BorderLayout) findPanel.getLayout();
+                findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                
+                this.displaySearchPanel = new JPanel();
+                
+               
+                displaySearchedData(displaySearchPanel, dataColumnNames.toArray(new String[0]), retrievedData.toArray(new String[0]));
+                
+                findPanel.add(displaySearchPanel, BorderLayout.CENTER);
+                findPanel.validate();
+                
+            }else{
+                BorderLayout layout = (BorderLayout) findPanel.getLayout();
+                findPanel.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                findPanel.add(new JLabel("Registro não encontado. Tente novamente.", SwingConstants.CENTER), BorderLayout.CENTER);
+                findPanel.validate();
+            }
+            
+            
+        } catch (Exception ex) {
+            
+            System.out.println("loadSearchData: "+ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao deletar registro: "+ ex.getMessage());
+           
+        }  
+        
+    }
+    
+    /**
+     * Display data selected by given columns and values
+     * @param insertPanel the panel where the data should be displayed
+     * @param columnNames the name of the columns used in the WHERE select statemente
+     * @param data value of the columns indicated by columnNames
+     */
+    void displaySearchedData(JPanel insertPanel, String[] columnNames, String[] data){
+        
+         //empty panel
+        insertPanel.removeAll();
+        try{
+            //Column names
+           String tableName = (String) this.tableNameBox.getSelectedItem();
+           
+           String dataType;
+           String label;
+
+           insertPanel.setLayout(new GridLayout(columnNames.length+1, 2));
+           for(int i=0; i<columnNames.length; i++){
+
+               label = columnNames[i];
+              
+               //name of column
+               insertPanel.add(new JLabel(label));
+               //data of the column
+               insertPanel.add(new JTextField(data[i].replace("\"","")));
+               
+            }
+           
+            insertPanel.add(new JLabel("Clique para alterar dados:"));
+            JButton searchButton = new JButton("Salvar");
+            insertPanel.add(searchButton);
+            searchButton.addMouseListener(new java.awt.event.MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                   //updateDataFromTable();
+                   //displayData(displayPanel);
+                   
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+            });
+           
+        
+        }catch(Exception e){
+            jtAreaDeStatus.setText("DisplaySearchedData:"+e.getMessage());
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    /**
+     * Get data from table and update it in database.
+     * Called by update button.
+     */
+    public void updateDataFromTable(){
+        
+        JPanel insertTable = this.displaySearchPanel;
+        
+     
+        //removing label and button from count
+        int nColumns = (insertTable.getComponentCount()-2)/2;
+        
+        
+        String data[] = new String[nColumns];
+        String columns[] = new String[nColumns];
+        
+
+        JTextField temp;
+        JLabel tempLabel;
+        JComboBox tempBox;
+        
+        for(int i=0; i< nColumns*2; i++){
+            if(i%2==0){
+                tempLabel = (JLabel) insertTable.getComponent(i);
+                columns[i/2]= tempLabel.getText();
+            }else{
+                if(insertTable.getComponent(i) instanceof JTextField){
+                    temp = (JTextField)insertTable.getComponent(i);
+                    data[(i-1)/2] = temp.getText();
+                }else{
+                    tempBox = (JComboBox) insertTable.getComponent(i);
+                    data[(i-1)/2] = (String)tempBox.getSelectedItem();
+                }
+            }
+            
+            
+        }
+        
+        //updateDataColumns((String)this.tableNameBox.getSelectedItem(),columns, data);
+      
+    }
+    
 }

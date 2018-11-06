@@ -289,6 +289,6 @@ public class JanelaPrincipal {
         bd.getAllNodesAndDisplay(pPainelDeExibicaoDeDados);
         bd.getAllRelationshipsAndDisplay(pPainelDeExibicaoDeRel);
         //bd.updateInsertTable((String)jc.getSelectedItem(), pPainelDeInsecaoDeDados, insertButton);
-       //bd.updateFindPanel((String)jc.getSelectedItem());
+        bd.updateFindPanel((String)jc.getSelectedItem());
     }
 }
