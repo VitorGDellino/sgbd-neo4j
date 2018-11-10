@@ -668,4 +668,36 @@ public class Neo4jFunctionality{
       
     }
     
+    public ArrayList<String> getNodes(String table){
+       ArrayList<String> data = new ArrayList<String>();
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run("MATCH (a:" + table + ") RETURN a");
+            // Each Cypher execution returns a stream of records.
+            Record record = null;
+            Iterable<String> it = null;
+
+            while (result.hasNext()){
+                record = result.next();
+                
+                it = record.get(0).keys();
+                if(it != null){
+                    String aux = "";
+                    for(String str : it){
+                        aux += str+": "+record.get(0).get(str).toString()+", ";                   
+                    }
+                    data.add(aux.substring(0, aux.length() - 2));
+                }
+            }       
+        }
+        return data;
+    }
+    
+    public void createRelationship(String label1, String data1, String label2, String data2, String relation){
+        String query = "MATCH (a:"+ label1 +" {" + data1 + "}), (b:"+ label2 + "{" + data2 + "})\nCREATE (a)-[:" + relation + "]->(b)";
+        System.out.println(query);
+        try(Session session = driver.session()){
+            StatementResult result = session.run(query);
+        }
+    }
 }

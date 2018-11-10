@@ -5,17 +5,24 @@
 package aula05.oracleinterface;
 
 import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -23,6 +30,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 /**
  *
@@ -42,6 +50,7 @@ public class JanelaPrincipal {
     JTable jt;
     JTable jtRel;
     JPanel pPainelDeInsecaoDeDados;
+    JPanel pPanelDeInsercaoDeRel;
     JPanel boxDeInsercaoDeDados;
     JButton insertButton;
     JButton insertFieldButton;
@@ -52,6 +61,15 @@ public class JanelaPrincipal {
     JButton ddlButton;
     JPanel findPanel;
     JPanel schemaPanel;
+    JComboBox jcN1;
+    JComboBox jcN2;
+    JPanel panelRel;
+    JButton directButton;
+    JButton inverseButton;
+    JList list1;
+    JList list2;
+    DefaultListModel lmodel1;
+    DefaultListModel lmodel2;
     
     ArrayList<JLabel> inputLabels;
     ArrayList<JTextField> inputFields;
@@ -170,13 +188,74 @@ public class JanelaPrincipal {
         
         tabbedPane.add(findPanel, "Busca");
         
+       /*Tab de inserção de relação*/
+       pPanelDeInsercaoDeRel = new JPanel(new GridBagLayout());
+       GridBagConstraints c = new GridBagConstraints();
+       
+       tabbedPane.add(pPanelDeInsercaoDeRel, "Inserção de Relação");
+       lmodel1 = new DefaultListModel();
+       lmodel2 = new DefaultListModel();
+       list1 = new JList(lmodel1);
+       list1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+       list1.setLayoutOrientation(JList.VERTICAL_WRAP);
+       list1.setVisibleRowCount(-1);
+       list2 = new JList(lmodel2);
+       list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+       list2.setLayoutOrientation(JList.VERTICAL_WRAP);
+       list2.setVisibleRowCount(-1);
+       
+       
+       jcN1 = new JComboBox();
+       jcN2 = new JComboBox();
+       panelRel = new JPanel(new GridBagLayout());
+       directButton = new JButton(">>");
+       inverseButton = new JButton("<<");
+       panelRel.add(directButton);
+       panelRel.add(inverseButton);
+       c.anchor = GridBagConstraints.FIRST_LINE_START;
+       c.fill = GridBagConstraints.BOTH;
+       c.weightx = 1;
+       c.weighty = 0.95;
+       c.gridx = 0;
+       c.gridy = 1;
+       pPanelDeInsercaoDeRel.add(new JScrollPane(list1), c);
+       c.fill = GridBagConstraints.BOTH;
+       c.weightx = 1;
+       c.weighty = 0.01;
+       c.gridx = 0;
+       c.gridy = 0;
+       pPanelDeInsercaoDeRel.add(jcN1, c);
+       c.fill = GridBagConstraints.BOTH;
+       c.weightx = 1;
+       c.weighty = 0.95;
+       c.gridx = 1;
+       c.gridy = 0;
+       c.gridheight = 2;
+       pPanelDeInsercaoDeRel.add(panelRel, c);
+       c.fill = GridBagConstraints.BOTH;
+       c.weightx = 1;
+       c.weighty = 0.01;
+       c.gridx = 2;
+       c.gridy = 0;
+       c.gridheight = 1;
+       pPanelDeInsercaoDeRel.add(jcN2, c);
+       c.fill = GridBagConstraints.BOTH;
+       c.weightx = 1;
+       c.weighty = 0.95;
+       c.gridx = 2;
+       c.gridy = 1;
+       pPanelDeInsercaoDeRel.add(new JScrollPane(list2), c);
+       
+       
        
         
         j.setVisible(true);
 
         bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc,jcRel, pPainelDeExibicaoDeDados, findPanel);
-        bd.connect("bolt://localhost:11001", "neo4j", "1234");
+        bd.connect("bolt://localhost:7687", "neo4j", "1234");
         bd.setLabels(jc);
+        bd.setLabels(jcN1);
+        bd.setLabels(jcN2);
         bd.setRelationshipTypes(jcRel);
         updateDisplay();
       
@@ -280,6 +359,48 @@ public class JanelaPrincipal {
                 panel.add(new JLabel(columnName.getText().toString()));
                 panel.add(new JTextField(20));
                 boxDeInsercaoDeDados.add(panel); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        
+        jcN1.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                lmodel1.clear();
+                for(String s : bd.getNodes(jcN1.getSelectedItem().toString())) {
+                    lmodel1.addElement(s);
+                }
+            }
+        });
+        
+        jcN2.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                lmodel2.clear();
+                for(String s : bd.getNodes(jcN2.getSelectedItem().toString())) {
+                    lmodel2.addElement(s);
+                }
+            }
+        });
+        
+        directButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(list1.getSelectedValue() == null || list2.getSelectedValue() == null){
+                    jtAreaDeStatus.setText("Selecione os dois nós");
+                    return;
+                }
+                bd.createRelationship(jcN1.getSelectedItem().toString(), list1.getSelectedValue().toString(), jcN2.getSelectedItem().toString(), list2.getSelectedValue().toString(), jcRel.getSelectedItem().toString());
+            }
+        });
+        
+        inverseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    if(list1.getSelectedValue() == null || list2.getSelectedValue() == null){
+                    jtAreaDeStatus.setText("Selecione os dois nós");
+                    return;
+                }
+                bd.createRelationship(jcN2.getSelectedItem().toString(), list2.getSelectedValue().toString(), jcN1.getSelectedItem().toString(), list1.getSelectedValue().toString(), jcRel.getSelectedItem().toString());
             }
         });
     }
