@@ -268,6 +268,7 @@ public class JanelaPrincipal {
             @Override
             public void actionPerformed(ActionEvent e){
                 bd.insertNode((String)jc.getSelectedItem(), inputLabels, inputFields);
+                updateDisplay();
                 //bd.insertDataFromTable(pPainelDeInsecaoDeDados, (String)jc.getSelectedItem());
                 //bd.displayData(pPainelDeExibicaoDeDados);
                 
@@ -281,8 +282,10 @@ public class JanelaPrincipal {
                 JPanel panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
                 
-                // Savin in Reference Array
-                inputLabels.add((columnName.getText().toString()));
+                // Preparing String and Saving in Reference Array
+                String uName = columnName.getText().toString().toUpperCase();
+                uName = uName.replaceAll("\\s+", "");
+                inputLabels.add(uName);
                 inputFields.add(new JTextField());
                 
                 // Put into the panels

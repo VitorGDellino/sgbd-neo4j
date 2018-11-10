@@ -156,10 +156,10 @@ public class Neo4jFunctionality{
             
                 model = (DefaultTableModel) displayTable.getModel();
             }
-
+            int i = 0;
             while (result.hasNext()){
                 if(it != null){
-                    int i = 0;
+                    i = 0;
                     for(String str : it){
                         data[i] = record.get(0).get(str).toString();
                         data[i] = data[i].replace("\"", "");
@@ -171,6 +171,17 @@ public class Neo4jFunctionality{
                 }
                 record = result.next();                  
             }
+            
+            // Show the Last one Record
+            i = 0;
+            for(String str : it){
+                data[i] = record.get(0).get(str).toString();
+                data[i] = data[i].replace("\"", "");
+                i++;
+            }
+
+            model.addRow(data);
+            // ******************************************
             
             model.fireTableDataChanged();
             
@@ -678,13 +689,15 @@ public class Neo4jFunctionality{
             
             query = query.substring(0, query.length()-1);
             
-            query += "});";
+            query += " });";
             
             System.out.println(query);
-            //StatementResult result = session.run(query);
+            StatementResult result = session.run(query);
             
             return true;
         }catch(Exception e){
+            jtAreaDeStatus.setText("Insertion Problem: "+e.getMessage());
+            System.out.println(e.getMessage());
             return false;
         }
     }
