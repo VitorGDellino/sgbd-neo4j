@@ -143,10 +143,10 @@ public class Neo4jFunctionality{
             
                 model = (DefaultTableModel) displayTable.getModel();
             }
-
+            int i = 0;
             while (result.hasNext()){
                 if(it != null){
-                    int i = 0;
+                    i = 0;
                     for(String str : it){
                         data[i] = record.get(0).get(str).toString();
                         data[i] = data[i].replace("\"", "");
@@ -158,6 +158,17 @@ public class Neo4jFunctionality{
                 }
                 record = result.next();                  
             }
+            
+            // Show the Last one Record
+            i = 0;
+            for(String str : it){
+                data[i] = record.get(0).get(str).toString();
+                data[i] = data[i].replace("\"", "");
+                i++;
+            }
+
+            model.addRow(data);
+            // ******************************************
             
             model.fireTableDataChanged();
             
@@ -656,6 +667,7 @@ public class Neo4jFunctionality{
       
     }
     
+
     public ArrayList<String> getNodes(String table){
        ArrayList<String> data = new ArrayList<String>();
         try (Session session = driver.session()){
@@ -686,6 +698,7 @@ public class Neo4jFunctionality{
         
         try(Session session = driver.session()){
             StatementResult result = session.run(query);
+            jtAreaDeStatus.setText("Relacionamento adicionado!");
         }
     }
 
@@ -730,4 +743,29 @@ public class Neo4jFunctionality{
     }
     
     
+
+    public boolean insertNode(String tableName, ArrayList<String> columnsNames, ArrayList<JTextField> inputs){
+        try(Session session = driver.session()){
+            String query = "CREATE( a:" + tableName + "{";
+            for(int i = 0; i < columnsNames.size(); i++){
+                query += " " + columnsNames.get(i) + " : ";
+                query += "'"+ inputs.get(i).getText().toString() + "',";
+            }
+            
+            query = query.substring(0, query.length()-1);
+            
+            query += " });";
+            
+            StatementResult result = session.run(query);
+            
+            jtAreaDeStatus.setText("Nó inserido");
+            
+            return true;
+        }catch(Exception e){
+            jtAreaDeStatus.setText("Insertion Problem: "+e.getMessage());
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
 }

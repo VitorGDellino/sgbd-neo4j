@@ -5,9 +5,13 @@
 package aula05.oracleinterface;
 
 import java.awt.BorderLayout;
+
 import java.awt.Button;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+
+import java.awt.Dimension;
+
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,7 +75,7 @@ public class JanelaPrincipal {
     DefaultListModel lmodel1;
     DefaultListModel lmodel2;
     
-    ArrayList<JLabel> inputLabels;
+    ArrayList<String> inputLabels;
     ArrayList<JTextField> inputFields;
 
     public void ExibeJanelaPrincipal() {
@@ -180,6 +184,9 @@ public class JanelaPrincipal {
         boxDeBotoes.add(insertFieldButton);
         boxDeBotoes.add(columnName);        
         pPainelDeInsecaoDeDados.add(boxDeBotoes);
+        
+        inputLabels = new ArrayList<String>();
+        inputFields = new ArrayList<JTextField>();
         
         tabbedPane.add(pPainelDeInsecaoDeDados, "Inserção");
       
@@ -339,11 +346,11 @@ public class JanelaPrincipal {
         });
         
         
-        insertButton.addActionListener(new ActionListener()
-        {
+        insertButton.addActionListener(new ActionListener(){
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e){
+                bd.insertNode((String)jc.getSelectedItem(), inputLabels, inputFields);
+                updateDisplay();
                 //bd.insertDataFromTable(pPainelDeInsecaoDeDados, (String)jc.getSelectedItem());
                 //bd.displayData(pPainelDeExibicaoDeDados);
                 
@@ -356,9 +363,27 @@ public class JanelaPrincipal {
             public void actionPerformed(ActionEvent e) {
                 JPanel panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
-                panel.add(new JLabel(columnName.getText().toString()));
-                panel.add(new JTextField(20));
-                boxDeInsercaoDeDados.add(panel); //To change body of generated methods, choose Tools | Templates.
+                
+                // Preparing String and Saving in Reference Array
+                String uName = columnName.getText().toString().toUpperCase();
+                uName = uName.replaceAll("\\s+", "");
+                inputLabels.add(uName);
+                inputFields.add(new JTextField());
+                
+                // Put into the panels
+                panel.add(new JLabel(inputLabels.get(inputLabels.size()- 1)));
+                panel.add(inputFields.get(inputFields.size()- 1));
+                boxDeInsercaoDeDados.add(panel);
+                
+                // Repainting the panel
+                pPainelDeInsecaoDeDados.validate();
+                pPainelDeInsecaoDeDados.repaint();//To change body of generated methods, choose Tools | Templates.
+            
+                /*  ONLY FOR DEBUG PURPOSE
+                    for(int i = 0; i < inputLabels.size(); i++){
+                    System.out.println(inputLabels.get(i));
+                    System.out.println(inputFields.get(i).getText().toString());
+                }*/
             }
         });
         
@@ -408,10 +433,35 @@ public class JanelaPrincipal {
     }
     
     void updateDisplay(){
-        //jtAreaDeStatus.setText((String) jc.getSelectedItem()+bd.pegarMetaDados((String) jc.getSelectedItem()));     
+           
         bd.getAllNodesAndDisplay(pPainelDeExibicaoDeDados);
         bd.getAllRelationshipsAndDisplay(pPainelDeExibicaoDeRel);
-        //bd.updateInsertTable((String)jc.getSelectedItem(), pPainelDeInsecaoDeDados, insertButton);
         bd.updateFindPanel((String)jc.getSelectedItem());
+        insertPrimaryKeysonGUI();
+    }
+
+    private void insertPrimaryKeysonGUI() {
+        // REMOVE ALL ELEMENTS FROM ARRAYLISTS
+        inputFields.clear();
+        inputLabels.clear();
+        // Clearing screen
+        boxDeInsercaoDeDados.removeAll();
+        boxDeInsercaoDeDados.revalidate();
+        
+        // Getting the primary keys
+        ArrayList<String> pks = bd.getNameOfPrimaryKeys((String)jc.getSelectedItem());
+        inputLabels = pks;
+        int i = 0;
+        
+        // Populating the Reference Array
+        for(String pk : pks){
+            JPanel jp = new JPanel();
+            jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
+            inputFields.add(new JTextField());
+            jp.add(new JLabel(pk));
+            jp.add(inputFields.get(i));
+            boxDeInsercaoDeDados.add(jp);
+            i++;
+        }
     }
 }
