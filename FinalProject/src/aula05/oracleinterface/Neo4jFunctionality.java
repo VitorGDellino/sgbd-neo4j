@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ *Elisa Saltori Trujillo - 8551100
+ *Matheus Araujo Jorge - 9266705
+ *Vitor Giovani Dellinocente - 9277875
  */
 package aula05.oracleinterface;
 
@@ -56,11 +56,20 @@ public class Neo4jFunctionality{
         this.findPanel = findPanel;
     }
     
+    /**
+     * Connect to database
+     * @param uri bolt uri
+     * @param user username
+     * @param password password
+     */
     public void connect(String uri, String user, String password){
         driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
     }
 
-    
+    /**
+     * Get all labels present in the database
+     * @return labels
+     */
     private ArrayList<String> getAllLabels(){
         ArrayList<String> labels = new ArrayList<String>();
         try(Session session = driver.session()){
@@ -75,6 +84,10 @@ public class Neo4jFunctionality{
         return labels;
     }
     
+    /**
+     * Set labels on combobox
+     * @param jc combobox
+     */
     public void setLabels(JComboBox jc){
         ArrayList<String> labels = getAllLabels();
         for(String label : labels){
@@ -100,6 +113,10 @@ public class Neo4jFunctionality{
         return labels;
     }
     
+    /**
+     * Update combobox with names of relationships
+     * @param jc combo box
+     */
     public void setRelationshipTypes(JComboBox jc){
         ArrayList<String> labels = getAllRelationshipTypes();
         for(String label : labels){
@@ -667,7 +684,11 @@ public class Neo4jFunctionality{
       
     }
     
-
+    /**
+     * Get all the nodes of a label and display
+     * @param table label name
+     * @return data from the label
+     */
     public ArrayList<String> getNodes(String table){
        ArrayList<String> data = new ArrayList<String>();
         try (Session session = driver.session()){
@@ -693,6 +714,14 @@ public class Neo4jFunctionality{
         return data;
     }
     
+    /**
+     * Create a new relationship between two nodes
+     * @param label1 label of node 1
+     * @param data1 data of node 1
+     * @param label2 label of node 2
+     * @param data2 data of node 2
+     * @param relation name of the relationship
+     */
     public void createRelationship(String label1, String data1, String label2, String data2, String relation){
         String query = "MATCH (a:"+ label1 +" {" + data1 + "}), (b:"+ label2 + "{" + data2 + "})\nCREATE (a)-[:" + relation + "]->(b)";
         
@@ -743,7 +772,13 @@ public class Neo4jFunctionality{
     }
     
     
-
+    /**
+     * Insert new node into database
+     * @param tableName table (label) name
+     * @param columnsNames name of the columns to be inserted
+     * @param inputs values of the columns
+     * @return true if insertion was successful
+     */
     public boolean insertNode(String tableName, ArrayList<String> columnsNames, ArrayList<JTextField> inputs){
         try(Session session = driver.session()){
             String query = "CREATE( a:" + tableName + "{";
