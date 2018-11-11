@@ -252,7 +252,7 @@ public class JanelaPrincipal {
         j.setVisible(true);
 
         bd = new Neo4jFunctionality(jtAreaDeStatus, pPainelDeInsecaoDeDados, jc,jcRel, pPainelDeExibicaoDeDados, findPanel);
-        bd.connect("bolt://localhost:7687", "neo4j", "1234");
+        bd.connect("bolt://localhost:11001", "neo4j", "1234");
         bd.setLabels(jc);
         bd.setLabels(jcN1);
         bd.setLabels(jcN2);
@@ -390,6 +390,7 @@ public class JanelaPrincipal {
                     return;
                 }
                 bd.createRelationship(jcN1.getSelectedItem().toString(), list1.getSelectedValue().toString(), jcN2.getSelectedItem().toString(), list2.getSelectedValue().toString(), jcRel.getSelectedItem().toString());
+                updateDisplay();
             }
         });
         
@@ -401,6 +402,7 @@ public class JanelaPrincipal {
                     return;
                 }
                 bd.createRelationship(jcN2.getSelectedItem().toString(), list2.getSelectedValue().toString(), jcN1.getSelectedItem().toString(), list1.getSelectedValue().toString(), jcRel.getSelectedItem().toString());
+                updateDisplay();
             }
         });
     }

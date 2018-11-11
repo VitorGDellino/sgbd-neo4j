@@ -60,19 +60,6 @@ public class Neo4jFunctionality{
         driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
     }
 
-    private void addPerson(String name){
-        // Sessions are lightweight and disposable connection wrappers.
-        try (Session session = driver.session())
-        {
-            // Wrapping Cypher in an explicit transaction provides atomicity
-            // and makes handling errors much easier.
-            try (Transaction tx = session.beginTransaction())
-            {
-                tx.run("MERGE (a:Person {name: {x}})", parameters("x", name));
-                tx.success();  // Mark this write as successful.
-            }
-        }
-    }
     
     private ArrayList<String> getAllLabels(){
         ArrayList<String> labels = new ArrayList<String>();
@@ -695,7 +682,7 @@ public class Neo4jFunctionality{
     
     public void createRelationship(String label1, String data1, String label2, String data2, String relation){
         String query = "MATCH (a:"+ label1 +" {" + data1 + "}), (b:"+ label2 + "{" + data2 + "})\nCREATE (a)-[:" + relation + "]->(b)";
-        System.out.println(query);
+        
         try(Session session = driver.session()){
             StatementResult result = session.run(query);
         }
