@@ -584,8 +584,9 @@ public class Neo4jFunctionality{
             searchButton.addMouseListener(new java.awt.event.MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                   //updateDataFromTable();
-                   //displayData(displayPanel);
+                   updateDataFromTable();
+                   updateDisplay();
+                   
                    
                 }
 
@@ -651,7 +652,7 @@ public class Neo4jFunctionality{
             
         }
         
-        //updateDataColumns((String)this.tableNameBox.getSelectedItem(),columns, data);
+        updateDataColumns((String)this.tableNameBox.getSelectedItem(),columns, data);
       
     }
     
@@ -687,4 +688,46 @@ public class Neo4jFunctionality{
             StatementResult result = session.run(query);
         }
     }
+
+    /***
+     * Update a node using previously collected primary keys and values
+     * @param tableName name of node label
+     * @param columns name of columns to be updated
+     * @param data values of columns to be updated
+     */
+    void updateDataColumns(String tableName, String[] columns, String[] data){
+        
+        //example query: MATCH (n:Funcionario { NROUSP: '4432' }) SET n.NROUSP = '5'
+        String query = "MATCH (n:"+tableName+" {";
+        
+        for(int i=0; i<this.primaryKeyNames.size()-1; i++){
+            query += this.primaryKeyNames.get(i)+":\""+this.primaryKeyValues[i]+"\", ";
+        }
+        
+        query += this.primaryKeyNames.get(this.primaryKeyNames.size()-1)+":\""
+                +this.primaryKeyValues[this.primaryKeyNames.size()-1]+"\"}) SET ";
+        
+        for(int i=0; i<columns.length-1; i++){
+            query +="n."+columns[i]+" = \""+data[i]+"\", ";
+        }
+        
+        query +="n."+columns[columns.length-1]+" = \""+data[columns.length-1]+"\"";
+        
+        
+        try (Session session = driver.session()){
+            // Auto-commit transactions are a quick and easy way to wrap a read.
+            StatementResult result = session.run(query);
+            jtAreaDeStatus.setText("Nó atualizado!");
+          
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public void updateDisplay(){
+        getAllNodesAndDisplay(displayPanel);
+      
+    }
+    
+    
 }
